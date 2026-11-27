@@ -1,0 +1,70 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Hourly random commit
+        run: |
+          git config user.name "jahidulhasansreezon-collab"
+          git config user.email "jahidulhasansreezon@gmail.com"
+
+          TODAY=$(TZ=Asia/Dhaka date +%F)
+          HOUR=$((10#$(TZ=Asia/Dhaka date +%H)))
+          HOURS_LEFT=$((24 - HOUR))
+
+          # আজকের লক্ষ্য (সারাদিন একই থাকবে)
+          COUNTS=(0 2 3 5 5 8 10 10 12 15 18 20 24 24)
+          SEED=$(echo "$TODAY" | cksum | cut -d' ' -f1)
+          TARGET=${COUNTS[$((SEED % ${#COUNTS[@]}))]}
+
+          touch activity-log.txt
+          DONE=$(grep -c "^$TODAY" activity-log.txt || true)
+          REMAINING=$((TARGET - DONE))
+
+          echo "Today: $TODAY | Target: $TARGET | Done: $DONE | Remaining: $REMAINING | Hours left: $HOURS_LEFT"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual test run: forcing one commit"
+          else
+            if [ "$REMAINING" -le 0 ]; then
+              echo "Target reached for today. Stopping."
+              exit 0
+            fi
+            ROLL=$((RANDOM % 1000))
+            if [ $((ROLL * HOURS_LEFT)) -ge $((REMAINING * 1000)) ]; then
+              echo "Skipping this hour."
+              exit 0
+            fi
+          fi
+
+          VERBS=("update" "fix" "refresh" "clean up" "tweak" "improve" "sync" "adjust" "refactor" "review" "polish" "organize" "simplify" "rename" "reorder" "document" "optimize" "restructure" "revise" "correct" "align" "format" "update" "rework" "streamline" "tidy" "improve" "adjust" "validate" "standardize")
+          NOUNS=("notes" "log" "config" "data" "docs" "status" "layout" "readme" "tasks" "settings" "cache" "report" "typo" "formatting" "comments" "labels" "headings" "summary" "checklist" "metadata" "paths" "variables" "examples" "descriptions" "structure" "naming" "indentation" "links" "text" "entries" "records" "overview" "index" "template" "outline" "changelog" "details" "sections" "values" "wording")
+          SUFFIXES=("" "" "" "" "" "for clarity" "again" "a bit" "slightly" "as planned" "for consistency")
+
+          V=${VERBS[$RANDOM % ${#VERBS[@]}]}
+          N=${NOUNS[$RANDOM % ${#NOUNS[@]}]}
+          S=${SUFFIXES[$RANDOM % ${#SUFFIXES[@]}]}
+          MSG="$V $N $S"
+          MSG=$(echo "$MSG" | sed 's/ *$//')
+
+          echo "$TODAY $(TZ=Asia/Dhaka date +%T) $MSG $RANDOM" >> activity-log.txt
+          date -u > last-run.txt
+          git add activity-log.txt last-run.txt
+          git commit -m "$MSG"
+          git pull --rebase
+          git push
