@@ -2,3 +2,4 @@
 2026-11-27 23:03:37 revise structure again 7835
 2026-11-27 23:55:48 restructure layout 23893
 2026-11-28 03:54:45 organize summary 22040
+2026-11-28 07:07:47 update outline 8920
