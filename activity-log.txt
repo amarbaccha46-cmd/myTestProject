@@ -6,3 +6,4 @@
 2026-11-28 08:50:33 improve links again 20480
 2026-11-28 09:54:51 adjust docs a bit 15635
 2026-11-28 11:55:38 validate notes 3464
+2026-11-28 13:06:53 reorder structure 7332
