@@ -4,3 +4,4 @@
 2026-11-28 03:54:45 organize summary 22040
 2026-11-28 07:07:47 update outline 8920
 2026-11-28 08:50:33 improve links again 20480
+2026-11-28 09:54:51 adjust docs a bit 15635
